@@ -1,0 +1,44 @@
+ .program keyboard
+.wrap_target
+set_row_1:
+set pins, 1 [31]  ;set row_1 High and wait for button bounce
+set x,0x1
+in pins,4
+mov y, isr
+jmp !y set_row_2
+jmp rx_fifo
+    
+set_row_2:
+set pins, 2  [31]
+set x,0x2 
+in pins,4  
+mov y, isr  
+jmp !y set_row_3  
+jmp rx_fifo   
+
+set_row_3: 
+set pins, 4   [31]
+set x,0x4  
+in pins,4  
+mov y, isr  
+jmp !y  set_row_4  
+jmp rx_fifo
+
+set_row_4:
+set pins, 8   [31]
+set x,0x8  
+in pins,4  
+mov y, isr  
+jmp !y  set_row_1
+
+rx_fifo:  
+push                  ;push y col   
+in x,4  [2]
+push                  ;and then x row  
+irq  0 rel
+
+wait 0 pin 0     ; check whether key is released
+wait 0 pin 1  
+wait 0 pin 2  
+wait 0 pin 3  
+.wrap
