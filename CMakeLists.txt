@@ -1,3 +1,32 @@
+# == DO NOT EDIT THE FOLLOWING LINES for the Raspberry Pi Pico VS Code Extension to work ==
+if(WIN32)
+    set(USERHOME $ENV{USERPROFILE})
+else()
+    set(USERHOME $ENV{HOME})
+endif()
+set(sdkVersion 2.1.0)
+set(toolchainVersion 13_3_Rel1)
+set(picotoolVersion 2.1.0)
+set(picoVscode ${USERHOME}/.pico-sdk/cmake/pico-vscode.cmake)
+if (EXISTS ${picoVscode})
+    include(${picoVscode})
+endif()
+set(CMAKE_BUILD_TYPE Debug)
+# ====================================================================================
+# == DO NOT EDIT THE FOLLOWING LINES for the Raspberry Pi Pico VS Code Extension to work ==
+if(WIN32)
+    set(USERHOME $ENV{USERPROFILE})
+else()
+    set(USERHOME $ENV{HOME})
+endif()
+set(sdkVersion 2.1.0)
+set(toolchainVersion 13_3_Rel1)
+set(picotoolVersion 2.1.0)
+set(picoVscode ${USERHOME}/.pico-sdk/cmake/pico-vscode.cmake)
+if (EXISTS ${picoVscode})
+    include(${picoVscode})
+endif()
+# ====================================================================================
 # Generated Cmake Pico project file
 
 cmake_minimum_required(VERSION 3.13)
@@ -44,21 +73,31 @@ target_sources(picow_ble_keyboard PUBLIC
         # ${CMAKE_CURRENT_LIST_DIR}/usb_descriptors.c
         # ${CMAKE_CURRENT_LIST_DIR}/hid_keyboard_demo.c
         ${CMAKE_CURRENT_LIST_DIR}/hog_keyboard.c
+        ${CMAKE_CURRENT_LIST_DIR}/tmk_core/common/keyboard.c
+        ${CMAKE_CURRENT_LIST_DIR}/keyboard/pico2w_ble/
         )
 
 # Make sure TinyUSB can find tusb_config.h
 target_include_directories(picow_ble_keyboard PUBLIC
-        ${CMAKE_CURRENT_LIST_DIR})
+        ${CMAKE_CURRENT_LIST_DIR}
+        ${CMAKE_CURRENT_LIST_DIR}/keyboard/phkb
+        ${CMAKE_CURRENT_LIST_DIR}/tmk_core
+        )
 
 pico_btstack_make_gatt_header(picow_ble_keyboard PRIVATE "${CMAKE_CURRENT_LIST_DIR}/hog_keyboard.gatt")
 
-add_subdirectory(pico_keyboard)
+# add_subdirectory(tmk_core)
+add_subdirectory(keyboard/phkb)
  
 # In addition to pico_stdlib required for common PicoSDK functionality
-target_link_libraries(picow_ble_keyboard PUBLIC pico_stdlib pico_cyw43_arch_none pico_btstack_cyw43 pico_btstack_ble pico_keyboard)
+target_link_libraries(picow_ble_keyboard PUBLIC pico_stdlib pico_cyw43_arch_none pico_btstack_cyw43 pico_btstack_ble phkb)
 
 # Uncomment this line to enable fix for Errata RP2040-E5 (the fix requires use of GPIO 15)
 #target_compile_definitions(picow_ble_keyboard PUBLIC PICO_RP2040_USB_DEVICE_ENUMERATION_FIX=1)
+
+# enable usb output, disable uart output
+pico_enable_stdio_usb(picow_ble_keyboard 1)
+pico_enable_stdio_uart(picow_ble_keyboard 0)
 
 pico_add_extra_outputs(picow_ble_keyboard)
 

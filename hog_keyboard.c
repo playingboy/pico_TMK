@@ -35,7 +35,9 @@
  * contact@bluekitchen-gmbh.com
  *
  */
- #include <stdio.h>
+
+#include "config.h"
+#include <stdio.h>
 #include "pico/stdlib.h"
 #include "pico/cyw43_arch.h"
 #include "btstack.h"
@@ -47,6 +49,7 @@
 #include "hog_keyboard.h"
 #include "inttypes.h"
 #include "keyboard.h"
+//#include "pico_keypad4x4.h"
 
 #define BACKSPACE_BUTTON   16
 #define RETURN_BUTTON 17
@@ -344,6 +347,15 @@ void key_button_callback(uint gpio, uint32_t events) {
 
 }
 
+static uint columns[4] = { 18, 19, 20, 21 };
+static uint rows[4] = { 10, 11, 12, 13 };
+static char matrix[16] = {
+    '1', '2' , '3', 'A',
+    '4', '5' , '6', 'B',
+    '7', '8' , '9', 'C',
+    '*', '0' , '#', 'D'
+};
+
 
 int main()
 {
@@ -353,6 +365,7 @@ int main()
         return 0;
     }
     //0. initialize keyboard
+    // keyboard init
     keyboard_init();
 
     // backspace & return key
@@ -412,13 +425,13 @@ int main()
     uint8_t c;
     while(1) {
         if (con_handle == HCI_CON_HANDLE_INVALID) {
-            key_input('!');
             continue;
         }
-        c=get_new_keyboard_value();
-        if (c) {
-            key_input(c);
-        }
+        // c=pico_keypad_get_key();
+        // if (c) {
+        //     key_input(c);
+        // }
+        keyboard_task();
     }
 
     return 0;
