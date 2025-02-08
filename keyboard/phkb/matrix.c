@@ -23,7 +23,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
+#include "config.h"
 #include "timer.h"
+#include "wait.h"
 #include "matrix.h"
 
 
@@ -38,6 +40,8 @@ static uint16_t debouncing_time = 0;
 static matrix_row_t matrix[MATRIX_ROWS];
 static matrix_row_t matrix_debouncing[MATRIX_ROWS];
 
+uint8_t pin_column[MATRIX_ROWS] = {2, 3, 6,7,8,9,10,11};
+uint8_t pin_row[MATRIX_ROWS] = {12, 13, 14, 15,20, 21, 22, 26};
 
 #define PAL_MODE_INPUT_PULLDOWN 1
 #define PAL_MODE_OUTPUT_PUSHPULL 2
@@ -56,63 +60,43 @@ void palSetPadMode(uint pin, int mod){
 void matrix_init(void)
 {
     /* Column(sense) */
-    palSetPadMode(0,  PAL_MODE_INPUT_PULLDOWN);
-    palSetPadMode(1,  PAL_MODE_INPUT_PULLDOWN);
-    palSetPadMode(2,  PAL_MODE_INPUT_PULLDOWN);
-    palSetPadMode(3,  PAL_MODE_INPUT_PULLDOWN);
-    palSetPadMode(4,  PAL_MODE_INPUT_PULLDOWN);
-    palSetPadMode(5,  PAL_MODE_INPUT_PULLDOWN);
-    palSetPadMode(6,  PAL_MODE_INPUT_PULLDOWN);
-    palSetPadMode(7,  PAL_MODE_INPUT_PULLDOWN);
+    for(int i = 0; i < MATRIX_COLS; i++){
+        palSetPadMode(pin_column[i], PAL_MODE_INPUT_PULLDOWN);
+    }
 
     /* Row(strobe) */
-    
-    palSetPadMode(9,  PAL_MODE_OUTPUT_PUSHPULL);
-    palSetPadMode(10,  PAL_MODE_OUTPUT_PUSHPULL);
-    palSetPadMode(11,  PAL_MODE_OUTPUT_PUSHPULL);
-    palSetPadMode(12, PAL_MODE_OUTPUT_PUSHPULL);
-    palSetPadMode(13, PAL_MODE_OUTPUT_PUSHPULL);
-    palSetPadMode(14,  PAL_MODE_OUTPUT_PUSHPULL);
-    palSetPadMode(15,  PAL_MODE_OUTPUT_PUSHPULL);
-    palSetPadMode(16,  PAL_MODE_OUTPUT_PUSHPULL);
+    for(int i = 0; i < MATRIX_ROWS; i++) {
+        palSetPadMode(pin_row[i], PAL_MODE_OUTPUT_PUSHPULL);
+    }
 
     memset(matrix, 0, MATRIX_ROWS);
     memset(matrix_debouncing, 0, MATRIX_ROWS);
+}
+
+matrix_row_t get_data(void){
+    uint32_t data = gpio_get_all();
+    matrix_row_t re = 0;
+    for(int i = 0; i < MATRIX_COLS; i++) {
+        re += ((1 & (data >> pin_column[i])) << i);
+    }
+    return re;
 }
 
 uint8_t matrix_scan(void)
 {
     for (int row = 0; row < MATRIX_ROWS; row++) {
         matrix_row_t data = 0;
-
         // strobe row
-        switch (row) {
-            case 0: gpio_put(9, 1);     break;
-            case 1: gpio_put(10, 1);    break;
-            case 2: gpio_put(11, 1);    break;
-            case 3: gpio_put(12, 1);    break;
-            case 4: gpio_put(13, 1);    break;
-            case 5: gpio_put(14, 1);    break;
-            case 6: gpio_put(15, 1);    break;
-            case 7: gpio_put(16, 1);    break;
-        }
+        gpio_put(pin_row[row], true);
 
-        busy_wait_us(1); // need wait to settle pin state
+        wait_us(1); // need wait to settle pin state
 
         // read col data
-        data = gpio_get_all();
+        data = get_data();
+        
 
         // un-strobe row
-        switch (row) {
-            case 0: gpio_put(9, 0);     break;
-            case 1: gpio_put(10, 0);    break;
-            case 2: gpio_put(11, 0);    break;
-            case 3: gpio_put(12, 0);    break;
-            case 4: gpio_put(13, 0);    break;
-            case 5: gpio_put(14, 0);    break;
-            case 6: gpio_put(15, 0);    break;
-            case 7: gpio_put(16, 0);    break;
-        }
+        gpio_put(pin_row[row], false);
 
         if (matrix_debouncing[row] != data) {
             matrix_debouncing[row] = data;

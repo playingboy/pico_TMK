@@ -95,10 +95,6 @@ target_link_libraries(picow_ble_keyboard PUBLIC pico_stdlib pico_cyw43_arch_none
 # Uncomment this line to enable fix for Errata RP2040-E5 (the fix requires use of GPIO 15)
 #target_compile_definitions(picow_ble_keyboard PUBLIC PICO_RP2040_USB_DEVICE_ENUMERATION_FIX=1)
 
-# enable usb output, disable uart output
-pico_enable_stdio_usb(picow_ble_keyboard 1)
-pico_enable_stdio_uart(picow_ble_keyboard 0)
-
 pico_add_extra_outputs(picow_ble_keyboard)
 
 # add url via pico_set_program_url

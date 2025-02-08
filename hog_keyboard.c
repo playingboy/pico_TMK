@@ -36,7 +36,7 @@
  *
  */
 
-#include "config.h"
+#include <pico/time.h>
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "pico/cyw43_arch.h"
@@ -107,55 +107,6 @@ const uint8_t hid_descriptor_keyboard_boot_mode[] = {
     0xc0,                          // End collection
 };
 
-//
-#define CHAR_ILLEGAL     0xff
-#define CHAR_RETURN     '\n'
-#define CHAR_ESCAPE      27
-#define CHAR_TAB         '\t'
-#define CHAR_BACKSPACE   0x7f
-
-// Simplified US Keyboard with Shift modifier
-
-/**
- * English (US)
- */
-static const uint8_t keytable_us_none [] = {
-    CHAR_ILLEGAL, CHAR_ILLEGAL, CHAR_ILLEGAL, CHAR_ILLEGAL,             /*   0-3 */
-    'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',                   /*  4-13 */
-    'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',                   /* 14-23 */
-    'u', 'v', 'w', 'x', 'y', 'z',                                       /* 24-29 */
-    '1', '2', '3', '4', '5', '6', '7', '8', '9', '0',                   /* 30-39 */
-    CHAR_RETURN, CHAR_ESCAPE, CHAR_BACKSPACE, CHAR_TAB, ' ',            /* 40-44 */
-    '-', '=', '[', ']', '\\', CHAR_ILLEGAL, ';', '\'', 0x60, ',',       /* 45-54 */
-    '.', '/', CHAR_ILLEGAL, CHAR_ILLEGAL, CHAR_ILLEGAL, CHAR_ILLEGAL,   /* 55-60 */
-    CHAR_ILLEGAL, CHAR_ILLEGAL, CHAR_ILLEGAL, CHAR_ILLEGAL,             /* 61-64 */
-    CHAR_ILLEGAL, CHAR_ILLEGAL, CHAR_ILLEGAL, CHAR_ILLEGAL,             /* 65-68 */
-    CHAR_ILLEGAL, CHAR_ILLEGAL, CHAR_ILLEGAL, CHAR_ILLEGAL,             /* 69-72 */
-    CHAR_ILLEGAL, CHAR_ILLEGAL, CHAR_ILLEGAL, CHAR_ILLEGAL,             /* 73-76 */
-    CHAR_ILLEGAL, CHAR_ILLEGAL, CHAR_ILLEGAL, CHAR_ILLEGAL,             /* 77-80 */
-    CHAR_ILLEGAL, CHAR_ILLEGAL, CHAR_ILLEGAL, CHAR_ILLEGAL,             /* 81-84 */
-    '*', '-', '+', '\n', '1', '2', '3', '4', '5',                       /* 85-97 */
-    '6', '7', '8', '9', '0', '.', 0xa7,                                 /* 97-100 */
-};
-
-static const uint8_t keytable_us_shift[] = {
-    CHAR_ILLEGAL, CHAR_ILLEGAL, CHAR_ILLEGAL, CHAR_ILLEGAL,             /*  0-3  */
-    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',                   /*  4-13 */
-    'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',                   /* 14-23 */
-    'U', 'V', 'W', 'X', 'Y', 'Z',                                       /* 24-29 */
-    '!', '@', '#', '$', '%', '^', '&', '*', '(', ')',                   /* 30-39 */
-    CHAR_RETURN, CHAR_ESCAPE, CHAR_BACKSPACE, CHAR_TAB, ' ',            /* 40-44 */
-    '_', '+', '{', '}', '|', CHAR_ILLEGAL, ':', '"', 0x7E, '<',         /* 45-54 */
-    '>', '?', CHAR_ILLEGAL, CHAR_ILLEGAL, CHAR_ILLEGAL, CHAR_ILLEGAL,   /* 55-60 */
-    CHAR_ILLEGAL, CHAR_ILLEGAL, CHAR_ILLEGAL, CHAR_ILLEGAL,             /* 61-64 */
-    CHAR_ILLEGAL, CHAR_ILLEGAL, CHAR_ILLEGAL, CHAR_ILLEGAL,             /* 65-68 */
-    CHAR_ILLEGAL, CHAR_ILLEGAL, CHAR_ILLEGAL, CHAR_ILLEGAL,             /* 69-72 */
-    CHAR_ILLEGAL, CHAR_ILLEGAL, CHAR_ILLEGAL, CHAR_ILLEGAL,             /* 73-76 */
-    CHAR_ILLEGAL, CHAR_ILLEGAL, CHAR_ILLEGAL, CHAR_ILLEGAL,             /* 77-80 */
-    CHAR_ILLEGAL, CHAR_ILLEGAL, CHAR_ILLEGAL, CHAR_ILLEGAL,             /* 81-84 */
-    '*', '-', '+', '\n', '1', '2', '3', '4', '5',                       /* 85-97 */
-    '6', '7', '8', '9', '0', '.', 0xb1,                                 /* 97-100 */
-};
 
 static btstack_packet_callback_registration_t hci_event_callback_registration;
 static btstack_packet_callback_registration_t sm_event_callback_registration;
@@ -192,17 +143,6 @@ static int lookup_keycode(uint8_t character, const uint8_t * table, int size, ui
 }
 
 static int keycode_and_modifer_us_for_character(uint8_t character, uint8_t * keycode, uint8_t * modifier){
-    int found;
-    found = lookup_keycode(character, keytable_us_none, sizeof(keytable_us_none), keycode);
-    if (found) {
-        *modifier = 0;  // none
-        return 1;
-    }
-    found = lookup_keycode(character, keytable_us_shift, sizeof(keytable_us_shift), keycode);
-    if (found) {
-        *modifier = 2;  // shift
-        return 1;
-    }
     return 0;
 }
 
@@ -335,26 +275,14 @@ void key_button_callback(uint gpio, uint32_t events) {
         busy_wait_ms(100);
         printf("%d\n", events);
         
-        key_input(CHAR_BACKSPACE); //Backspace key
-        
     }
     if (gpio == RETURN_BUTTON) {
         busy_wait_ms(200);
-        key_input(CHAR_RETURN); // return key
         
     }
     gpio_set_irq_enabled(gpio, GPIO_IRQ_EDGE_FALL, true);
 
 }
-
-static uint columns[4] = { 18, 19, 20, 21 };
-static uint rows[4] = { 10, 11, 12, 13 };
-static char matrix[16] = {
-    '1', '2' , '3', 'A',
-    '4', '5' , '6', 'B',
-    '7', '8' , '9', 'C',
-    '*', '0' , '#', 'D'
-};
 
 
 int main()
@@ -368,14 +296,7 @@ int main()
     // keyboard init
     keyboard_init();
 
-    // backspace & return key
-    gpio_init(BACKSPACE_BUTTON);
-    gpio_init(RETURN_BUTTON);
-    gpio_pull_up(BACKSPACE_BUTTON);
-    gpio_pull_up(RETURN_BUTTON);
-    gpio_set_irq_enabled_with_callback(BACKSPACE_BUTTON, GPIO_IRQ_EDGE_FALL, true, key_button_callback);
-    gpio_set_irq_enabled_with_callback(RETURN_BUTTON, GPIO_IRQ_EDGE_FALL, true, key_button_callback);
-
+    
     //1. initialize ring buffer for key input
     btstack_ring_buffer_init(&key_input_buffer, key_input_storage, sizeof(key_input_storage));
     
@@ -425,6 +346,8 @@ int main()
     uint8_t c;
     while(1) {
         if (con_handle == HCI_CON_HANDLE_INVALID) {
+            //printf("debug!\n");
+            //sleep_us(5);
             continue;
         }
         // c=pico_keypad_get_key();
@@ -432,6 +355,8 @@ int main()
         //     key_input(c);
         // }
         keyboard_task();
+        printf("finish!\n");
+        sleep_ms(1);
     }
 
     return 0;

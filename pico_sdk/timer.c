@@ -18,7 +18,9 @@ uint32_t timer_read32(void)
 
 uint16_t timer_elapsed(uint16_t last)
 {
-    return (uint16_t)(timer_read() - last);
+    uint16_t t = 0;
+    t = (timer_read() - last);
+    return t;
 }
 
 uint32_t timer_elapsed32(uint32_t last)
