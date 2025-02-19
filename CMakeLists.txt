@@ -11,6 +11,20 @@ set(picoVscode ${USERHOME}/.pico-sdk/cmake/pico-vscode.cmake)
 if (EXISTS ${picoVscode})
     include(${picoVscode})
 endif()
+# ====================================================================================
+# == DO NOT EDIT THE FOLLOWING LINES for the Raspberry Pi Pico VS Code Extension to work ==
+if(WIN32)
+    set(USERHOME $ENV{USERPROFILE})
+else()
+    set(USERHOME $ENV{HOME})
+endif()
+set(sdkVersion 2.1.0)
+set(toolchainVersion 13_3_Rel1)
+set(picotoolVersion 2.1.0)
+set(picoVscode ${USERHOME}/.pico-sdk/cmake/pico-vscode.cmake)
+if (EXISTS ${picoVscode})
+    include(${picoVscode})
+endif()
 set(CMAKE_BUILD_TYPE Debug)
 # ====================================================================================
 # == DO NOT EDIT THE FOLLOWING LINES for the Raspberry Pi Pico VS Code Extension to work ==
@@ -72,7 +86,8 @@ target_sources(picow_ble_keyboard PUBLIC
         # ${CMAKE_CURRENT_LIST_DIR}/main.c
         # ${CMAKE_CURRENT_LIST_DIR}/usb_descriptors.c
         # ${CMAKE_CURRENT_LIST_DIR}/hid_keyboard_demo.c
-        ${CMAKE_CURRENT_LIST_DIR}/hog_keyboard.c
+        ${CMAKE_CURRENT_LIST_DIR}/hog_keyboard_main.c
+        ${CMAKE_CURRENT_LIST_DIR}/hog_keyboard_tmk.c
         ${CMAKE_CURRENT_LIST_DIR}/tmk_core/common/keyboard.c
         ${CMAKE_CURRENT_LIST_DIR}/keyboard/pico2w_ble/
         )

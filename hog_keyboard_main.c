@@ -49,7 +49,29 @@
 #include "hog_keyboard.h"
 #include "inttypes.h"
 #include "keyboard.h"
-//#include "pico_keypad4x4.h"
+#include "hog_keyboard_tmk.h"
+#include "host.h"
+
+/* -------------------------
+ *   TMK host driver defs
+ * -------------------------
+ */
+
+/* declarations */
+uint8_t keyboard_leds(void);
+void send_keyboard(report_keyboard_t *report);
+void send_mouse(report_mouse_t *report);
+void send_system(uint16_t data);
+void send_consumer(uint16_t data);
+
+/* host struct */
+host_driver_t tmk_driver = {
+  keyboard_leds,
+  send_keyboard,
+  send_mouse,
+  send_system,
+  send_consumer
+};
 
 #define BACKSPACE_BUTTON   16
 #define RETURN_BUTTON 17
@@ -295,6 +317,8 @@ int main()
     //0. initialize keyboard
     // keyboard init
     keyboard_init();
+
+    host_set_driver(&tmk_driver);
 
     
     //1. initialize ring buffer for key input
