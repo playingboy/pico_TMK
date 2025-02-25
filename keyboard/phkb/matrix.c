@@ -27,6 +27,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "timer.h"
 #include "wait.h"
 #include "matrix.h"
+#include "stdio.h"
 
 
 #ifndef DEBOUNCE
@@ -126,16 +127,16 @@ matrix_row_t matrix_get_row(uint8_t row)
 
 void matrix_print(void)
 {
-    xprintf("\nr/c 01234567\n");
+    printf("\nr/c 01234567\n");
     for (uint8_t row = 0; row < MATRIX_ROWS; row++) {
-        xprintf("%02X: ");
+        printf("%02X: ");
         matrix_row_t data = matrix_get_row(row);
         for (int col = 0; col < MATRIX_COLS; col++) {
             if (data & (1<<col))
-                xprintf("1");
+                printf("1");
             else
-                xprintf("0");
+                printf("0");
         }
-        xprintf("\n");
+        printf("\n");
     }
 }
