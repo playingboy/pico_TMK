@@ -10,7 +10,7 @@ PHKB keyboard firmware
 
 ### HHKB
 [keymap_hhkb.c](keymap_hhkb.c) emulates original HHKB layers.
-#### 5.0: Default layer
+#### Default layer
     ,-----------------------------------------------------------.
     |Esc|  1|  2|  3|  4|  5|  6|  7|  8|  9|  0|  -|  =|  \|  `|
     |-----------------------------------------------------------|
