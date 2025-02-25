@@ -10,4 +10,5 @@ Move to this directory then just run like:
 
     $ mkdir build
     $ cd build
-    $ make
+    $ cmake ..
+    $ make -j4
