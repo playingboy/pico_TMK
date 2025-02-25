@@ -9,7 +9,5 @@ You can see the pico_sdk [README.md](https://github.com/raspberrypi/pico-sdk)
 Move to this directory then just run like:
 
     $ mkdir build
-    
     $ cd build
-    
     $ make
