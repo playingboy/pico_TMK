@@ -130,11 +130,6 @@ const uint8_t hid_descriptor_keyboard_boot_mode[] = {
 };
 
 
-static btstack_packet_callback_registration_t hci_event_callback_registration;
-static btstack_packet_callback_registration_t sm_event_callback_registration;
-static uint8_t battery = 100;
-static hci_con_handle_t con_handle = HCI_CON_HANDLE_INVALID;
-static uint8_t protocol_mode = HID_PROTOCOL_MODE_REPORT;
 
 const uint8_t adv_data[] = {
     // Flags general discoverable, BR/EDR not supported
@@ -150,8 +145,7 @@ const uint8_t adv_data[] = {
 const uint8_t adv_data_len = sizeof(adv_data);
 
 // Buffer for 30 characters
-static uint8_t key_input_storage[30];
-static btstack_ring_buffer_t key_input_buffer;
+
 
 // HID Keyboard lookup
 static int lookup_keycode(uint8_t character, const uint8_t * table, int size, uint8_t * keycode){
@@ -182,12 +176,6 @@ static void send_report(int modifier, int keycode){
             break;
     }
 }
-
-static enum {
-    W4_INPUT,
-    W4_CAN_SEND_FROM_BUFFER,
-    W4_CAN_SEND_KEY_UP,
-} state;
 
 
 static void typing_can_send_now(void){
@@ -227,16 +215,6 @@ static void typing_can_send_now(void){
             break;
         default:
             break;
-    }
-}
-
-void key_input(char character){
-    uint8_t c = character;
-    btstack_ring_buffer_write(&key_input_buffer, &c, 1);
-    // start sending
-    if (state == W4_INPUT && con_handle != HCI_CON_HANDLE_INVALID){
-        state = W4_CAN_SEND_FROM_BUFFER;
-        hids_device_request_can_send_now_event(con_handle);
     }
 }
 
@@ -316,9 +294,9 @@ int main()
     }
     //0. initialize keyboard
     // keyboard init
-    keyboard_init();
+    //keyboard_init();
 
-    host_set_driver(&tmk_driver);
+    //host_set_driver(&tmk_driver);
 
     
     //1. initialize ring buffer for key input
@@ -378,7 +356,8 @@ int main()
         // if (c) {
         //     key_input(c);
         // }
-        keyboard_task();
+        // keyboard_task();
+        key_input('C');
         printf("finish!\n");
         sleep_ms(1);
     }
