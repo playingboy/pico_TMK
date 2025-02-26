@@ -1,5 +1,5 @@
 /*
-Copyright 2012 Jun Wako <wakojun@gmail.com>
+Copyright 2011 Jun Wako <wakojun@gmail.com>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -15,12 +15,19 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "stdio.h"
+#include <avr/io.h>
 #include "stdint.h"
 #include "led.h"
 
 
+/* HHKB has no LEDs */
 void led_set(uint8_t usb_led)
 {
-    return;
+    if (usb_led & (1<<USB_LED_CAPS_LOCK)) {
+        DDRD |= (1<<6);
+        PORTD |= (1<<6);
+    } else {
+        DDRD |= (1<<6);
+        PORTD &= ~(1<<6);
+    }
 }

@@ -2,6 +2,7 @@
 #define PICO_HHKB_H
 
 #include <hardware/gpio.h>
+#include <stdint.h>
 #include "pico/time.h"
 
 /*
@@ -24,6 +25,13 @@
  * power:   GPIO13(L:off/H:on)
  * row-ext: GPIO14, GPIO15 for HHKB JP(active low)
  */
+static uint8_t row[3] = {2, 3, 6};
+static uint8_t col[3] = {7, 8, 9};
+static uint8_t can = 10;
+static uint8_t key = 11;
+static uint8_t prev = 12;
+static uint8_t power = 13;
+static uint8_t row_ext[2] = {14, 15};
 
 
 static inline void KEY_ENABLE(void) { gpio_pull_down(10); }
@@ -70,14 +78,29 @@ static inline void KEY_INIT(void)
 
     KEY_POWER_OFF();
 }
+
 static inline void KEY_SELECT(uint8_t ROW, uint8_t COL)
 {
-    
-
-    PORTB = (PORTB & 0xC0) | (((COL) & 0x07)<<3) | ((ROW) & 0x07);
+    for (uint8_t i = 0; i < 3; i++) {
+        if(((ROW >> i) & 1) == 1) {
+            gpio_pull_up(row[i]);
+        } else {
+            gpio_pull_down(row[i]);
+        }
+        if(((COL >> i) & 1) == 1) {
+            gpio_pull_up(col[i]);
+        } else {
+            gpio_pull_down(col[i]);
+        }
+    }
 #ifdef HHKB_JP
-    if ((ROW) & 0x08) PORTC = (PORTC & ~(1<<6|1<<7)) | (1<<6);
-    else              PORTC = (PORTC & ~(1<<6|1<<7)) | (1<<7);
+    if ((ROW) & 0x08) {
+        gpio_pull_up(row_ext[0]);
+        gpio_pull_down(row_ext[1]);
+    } else {
+        gpio_pull_down(row_ext[0]);
+        gpio_pull_up(row_ext[1]);
+    }
 #endif
 }
 

@@ -1,90 +1,95 @@
-#include "keycode.h"
-#include <stdint.h>
-#include <stdbool.h>
-#include "keymap.h"
-
 /*
  * HHKB Layout
  */
-const uint8_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
-    /* 0: Default layer
+#include "keymap_common.h"
+
+
+#ifdef KEYMAP_SECTION_ENABLE
+const uint8_t keymaps[][MATRIX_ROWS][MATRIX_COLS] __attribute__ ((section (".keymap.keymaps"))) = {
+#else
+const uint8_t keymaps[][MATRIX_ROWS][MATRIX_COLS] PROGMEM = {
+#endif
+    /* Layer 0: Default Layer
      * ,-----------------------------------------------------------.
      * |Esc|  1|  2|  3|  4|  5|  6|  7|  8|  9|  0|  -|  =|  \|  `|
      * |-----------------------------------------------------------|
-     * |Tab  |  Q|  W|  E|  R|  T|  Y|  U|  I|  O|  P|  [|  ]|Bspc |
+     * |Tab  |  Q|  W|  E|  R|  T|  Y|  U|  I|  O|  P|  [|  ]|Backs|
      * |-----------------------------------------------------------|
-     * |Ctrl  |  A|  S|  D|  F|  G|  H|  J|  K|  L|  ;|  '|Return  |
+     * |Contro|  A|  S|  D|  F|  G|  H|  J|  K|  L|  ;|  '|Enter   |
      * |-----------------------------------------------------------|
-     * |Shift   |  Z|  X|  C|  V|  B|  N|  M|  ,|  .|  /|Shift |Fn |
-     * |-----------------------------------------------------------|
-     * |    |Gui |Alt |      Space             |    |Alt |Gui |    |
+     * |Shift   |  Z|  X|  C|  V|  B|  N|  M|  ,|  .|  /|Shift |Fn0|
      * `-----------------------------------------------------------'
+     *       |Alt|Gui  |         Space         |Gui  |Alt|
+     *       `-------------------------------------------'
      */
+    KEYMAP(ESC, 1,   2,   3,   4,   5,   6,   7,   8,   9,   0,   MINS,EQL, BSLS,GRV,   \
+           TAB, Q,   W,   E,   R,   T,   Y,   U,   I,   O,   P,   LBRC,RBRC,BSPC,       \
+           LCTL,A,   S,   D,   F,   G,   H,   J,   K,   L,   SCLN,QUOT,ENT,             \
+           LSFT,Z,   X,   C,   V,   B,   N,   M,   COMM,DOT, SLSH,RSFT,FN0,             \
+                LALT,LGUI,          SPC,                RGUI,RALT),
 
-    /* keymap to matrix 8 x 8
-     * ,-----------------------------------------------------------.
-     * |0,0|0,1|0,2|0,3|0,4|0,5|0,6|0,7|5,0|5,1|5,2|5,3|5,4|5,5|5,6|
-     * |-----------------------------------------------------------|
-     * |1,0  |1,1|1,2|1,3|1,4|1,5|1,6|1,7|6,0|6,2|6,3|6,4|6,5| 6,6 |
-     * |-----------------------------------------------------------|
-     * |2,0   |2,1|2,2|2,3|2,4|2,5|2,6|2,7|6,1|7,1|7,3|7,5|  7,6   |
-     * |-----------------------------------------------------------|
-     * |3,0     |3,1|3,2|3,3|3,4|3,5|3,6|3,7|7,0|7,2|7,4|  4,5 |4,6|
-     * |-----------------------------------------------------------|
-     * |    |4,0 |4,1 |      4,2               |    |4,3 |4,4 |    |
-     * `-----------------------------------------------------------'
-     */
-     
-     {
-        {KC_ESC,  KC_1,    KC_2,    KC_3,    KC_4,    KC_5,    KC_6,    KC_7},
-        {KC_TAB,  KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,    KC_Y,    KC_U},
-        {KC_LCTL, KC_A,    KC_S,    KC_D,    KC_F,    KC_G,    KC_H,    KC_J},
-        {KC_LSFT, KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_N,    KC_M},
-        {KC_LGUI, KC_LALT, KC_SPC,  KC_RALT, KC_RGUI, KC_RSFT, KC_FN0,  KC_NO},
-        {KC_8,    KC_9,    KC_0,    KC_MINS, KC_EQL,  KC_BSLS, KC_GRV,  KC_NO},
-        {KC_I,    KC_K,    KC_O,    KC_P,    KC_LBRC, KC_RBRC, KC_BSPC, KC_NO},
-        {KC_COMM, KC_L,    KC_DOT,  KC_SCLN, KC_SLSH, KC_QUOT, KC_ENT,  KC_NO}
-     },
-    /* KEYMAP_HHKB(
-        ESC, 1,   2,   3,   4,   5,   6,   7,   8,   9,   0,   MINS,EQL, BSLS, GRV, \
-        TAB, Q,   W,   E,   R,   T,   Y,   U,   I,   O,   P,   LBRC,RBRC,BSPC,      \
-        LCTL,A,   S,   D,   F,   G,   H,   J,   K,   L,   SCLN,QUOT,     ENT,       \
-        LSFT,Z,   X,   C,   V,   B,   N,   M,   COMM,DOT, SLSH,     RSFT,FN0,       \
-        NO,  LGUI,LALT,          SPC,                     NO,  RALT,RGUI,NO), */
-    /* 1: HHKB Fn layer
+    /* Layer 1: HHKB mode (HHKB Fn)
      * ,-----------------------------------------------------------.
      * |Pwr| F1| F2| F3| F4| F5| F6| F7| F8| F9|F10|F11|F12|Ins|Del|
      * |-----------------------------------------------------------|
-     * |Caps |   |   |   |   |   |   |   |Psc|Slk|Pus|Up |   |     |
+     * |Caps |   |   |   |   |   |   |   |Psc|Slk|Pus|Up |   |Backs|
      * |-----------------------------------------------------------|
-     * |      |VoD|VoU|Mut|Ejc|   |  *|  /|Hom|PgU|Lef|Rig|Enter   |
+     * |      |VoD|VoU|Mut|   |   |  *|  /|Hom|PgU|Lef|Rig|Enter   |
      * |-----------------------------------------------------------|
      * |        |   |   |   |   |   |  +|  -|End|PgD|Dow|      |   |
-     * |-----------------------------------------------------------|
-     * |    |    |    |                        |    |    |    |    |
      * `-----------------------------------------------------------'
+     *       |   |     |                       |     |   |
+     *       `-------------------------------------------'
      */
-    {
-        {KC_PWR,  KC_F1,   KC_F2,    KC_F3,   KC_F4,   KC_F5,   KC_F6,  KC_F7},
-        {KC_CAPS, KC_TRNS, KC_TRNS,  KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,KC_TRNS},
-        {KC_TRNS, KC_VOLD, KC_VOLU,  KC_MUTE, KC_EJCT, KC_TRNS, KC_PAST,KC_PSLS},
-        {KC_TRNS, KC_TRNS, KC_TRNS,  KC_TRNS, KC_TRNS, KC_TRNS, KC_PPLS,KC_PMNS},
-        {KC_TRNS, KC_TRNS, KC_TRNS,  KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,KC_NO},
-        {KC_F8,   KC_F9,   KC_F10,   KC_F11,  KC_F12,  KC_INS,  KC_DEL, KC_NO},
-        {KC_PSCR, KC_HOME, KC_SLCK,  KC_PAUS, KC_UP,   KC_TRNS, KC_TRNS,KC_NO},
-        {KC_END,  KC_PGUP, KC_PGDN,  KC_LEFT,KC_DOWN,  KC_RGHT, KC_PENT,KC_NO}
-    }
-    /* KEYMAP_HHKB(
-        PWR, F1,  F2,  F3,  F4,  F5,  F6,  F7,  F8,  F9,  F10, F11, F12, INS, DEL,  \
-        CAPS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,PSCR,SLCK,PAUS,UP,  TRNS,TRNS,      \
-        TRNS,VOLD,VOLU,MUTE,EJCT,TRNS,PAST,PSLS,HOME,PGUP,LEFT,RGHT,     PENT,      \
-        TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,PPLS,PMNS,END, PGDN,DOWN,     TRNS,TRNS,      \
-        TRNS,TRNS,TRNS,          TRNS,                    TRNS,TRNS,TRNS,TRNS), */
+    KEYMAP(PWR, F1,  F2,  F3,  F4,  F5,  F6,  F7,  F8,  F9,  F10, F11, F12, INS, DEL,   \
+           CAPS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,PSCR,SLCK,PAUS, UP, TRNS, BSPC,      \
+           TRNS,VOLD,VOLU,MUTE,TRNS,TRNS,PAST,PSLS,HOME,PGUP,LEFT,RGHT,PENT,            \
+           TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,PPLS,PMNS,END, PGDN,DOWN,TRNS,TRNS,            \
+                TRNS,TRNS,          TRNS,               TRNS,TRNS),
 };
+
+
 
 /*
  * Fn action definition
  */
-const action_t PROGMEM fn_actions[] = {
-    [0] = ACTION_LAYER_MOMENTARY(1),
+#ifdef KEYMAP_SECTION_ENABLE
+const action_t fn_actions[] __attribute__ ((section (".keymap.fn_actions"))) = {
+    [0]  = ACTION_LAYER_MOMENTARY(1),
+    [1]  = ACTION_LAYER_MOMENTARY(2),
+    [2]  = ACTION_LAYER_MOMENTARY(3),
+    [3]  = ACTION_LAYER_MOMENTARY(4),
+    [4]  = ACTION_LAYER_MOMENTARY(5),
+    [5]  = ACTION_LAYER_MOMENTARY(6),
+    [6]  = ACTION_LAYER_MOMENTARY(7),
+    [7]  = ACTION_LAYER_TOGGLE(1),
+    [8]  = ACTION_LAYER_TOGGLE(2),
+    [9]  = ACTION_LAYER_TOGGLE(3),
+    [10] = ACTION_LAYER_TAP_TOGGLE(1),
+    [11] = ACTION_LAYER_TAP_TOGGLE(2),
+    [12] = ACTION_LAYER_TAP_TOGGLE(3),
+    [13] = ACTION_LAYER_TAP_KEY(1, KC_BSLASH),
+    [14] = ACTION_LAYER_TAP_KEY(2, KC_TAB),
+    [15] = ACTION_LAYER_TAP_KEY(3, KC_ENTER),
+    [16] = ACTION_LAYER_TAP_KEY(4, KC_SPACE),
+    [17] = ACTION_LAYER_TAP_KEY(5, KC_SCOLON),
+    [18] = ACTION_LAYER_TAP_KEY(6, KC_QUOTE),
+    [19] = ACTION_LAYER_TAP_KEY(7, KC_SLASH),
+    [20] = ACTION_MODS_TAP_KEY(MOD_LSFT, KC_SPACE),
+    [21] = ACTION_MODS_TAP_KEY(MOD_LCTL, KC_SPACE),
+    [22] = ACTION_MODS_TAP_KEY(MOD_RCTL, KC_QUOTE),
+    [23] = ACTION_MODS_TAP_KEY(MOD_RCTL, KC_ENTER),
+    [24] = ACTION_MODS_TAP_KEY(MOD_LCTL, KC_ESC),
+    [25] = ACTION_MODS_TAP_KEY(MOD_LCTL, KC_BSPACE),
+    [26] = ACTION_MODS_ONESHOT(MOD_LCTL),
+    [27] = ACTION_MODS_TAP_KEY(MOD_LSFT, KC_ESC),
+    [28] = ACTION_MODS_TAP_KEY(MOD_LSFT, KC_BSPACE),
+    [29] = ACTION_MODS_ONESHOT(MOD_LSFT),
+    [30] = ACTION_MODS_TAP_KEY(MOD_RSFT, KC_GRAVE),
+    [31] = ACTION_MODS_TAP_KEY(MOD_RSFT, KC_BSLASH),
 };
+#else
+const action_t fn_actions[] PROGMEM = {
+    [0]  = ACTION_LAYER_MOMENTARY(1),
+};
+#endif
