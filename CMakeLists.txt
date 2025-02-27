@@ -54,10 +54,6 @@ add_executable(picow_ble_hid_keyboard
     btstack_hog_kb.c)
 
 target_sources(picow_ble_hid_keyboard PUBLIC
-    # ${CMAKE_CURRENT_LIST_DIR}/main.c
-    # ${CMAKE_CURRENT_LIST_DIR}/usb_descriptors.c
-    # ${CMAKE_CURRENT_LIST_DIR}/hid_keyboard_demo.c
-    # ${CMAKE_CURRENT_LIST_DIR}/hog_keyboard_main.c
     ${CMAKE_CURRENT_LIST_DIR}/hog_keyboard_tmk.c
     ${CMAKE_CURRENT_LIST_DIR}/tmk_core/common/keyboard.c
     )
@@ -71,7 +67,7 @@ pico_enable_stdio_usb(picow_ble_hid_keyboard 0)
 
 
 # add_subdirectory(tmk_core)
-add_subdirectory(keyboard/phkb)
+add_subdirectory(keyboard/hhkb_controller)
 # Add the standard library to the build
 target_link_libraries(picow_ble_hid_keyboard
         pico_stdlib
@@ -79,13 +75,12 @@ target_link_libraries(picow_ble_hid_keyboard
         pico_cyw43_arch_none
         pico_btstack_cyw43
         pico_btstack_ble
-        phkb
+        hhkb_controller
 )
 
 # Add the standard include files to the build
 target_include_directories(picow_ble_hid_keyboard PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
-        ${CMAKE_CURRENT_LIST_DIR}/keyboard/phkb
         ${CMAKE_CURRENT_LIST_DIR}/tmk_core
 )
 pico_btstack_make_gatt_header(picow_ble_hid_keyboard PRIVATE

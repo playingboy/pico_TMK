@@ -18,18 +18,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 /*
  * scan matrix
  */
+#include "hardware/timer.h"
 #include <stdint.h>
 #include <stdbool.h>
-#include <util/delay.h>
 #include "print.h"
 #include "debug.h"
 #include "util.h"
 #include "timer.h"
 #include "matrix.h"
 #include "pico_hhkb.h"
-#include <avr/wdt.h>
 #include "suspend.h"
-#include "lufa.h"
+#include "wait_api.h"
 
 
 // matrix power saving
@@ -72,18 +71,18 @@ uint8_t matrix_scan(void)
     for (uint8_t row = 0; row < MATRIX_ROWS; row++) {
         for (uint8_t col = 0; col < MATRIX_COLS; col++) {
             KEY_SELECT(row, col);
-            _delay_us(5);
+            busy_wait_us_32(5);
 
             // Not sure this is needed. This just emulates HHKB controller's behaviour.
             if (matrix_prev[row] & (1<<col)) {
                 KEY_PREV_ON();
             }
-            _delay_us(10);
+            busy_wait_us_32(10);
 
             // NOTE: KEY_STATE is valid only in 20us after KEY_ENABLE.
             // If V-USB interrupts in this section we could lose 40us or so
             // and would read invalid value from KEY_STATE.
-            uint8_t last = TIMER_RAW;
+            uint32_t last = time_us_32();
 
             KEY_ENABLE();
 
@@ -99,7 +98,7 @@ uint8_t matrix_scan(void)
             // 10us wait does    work on Teensy++ with pro
             // 10us wait does    work on 328p+iwrap with pro
             // 10us wait doesn't work on tmk PCB(8MHz) with pro2(very lagged scan)
-            _delay_us(5);
+            busy_wait_us_32(5);
 
             if (KEY_STATE()) {
                 matrix[row] &= ~(1<<col);
@@ -110,11 +109,11 @@ uint8_t matrix_scan(void)
             // Ignore if this code region execution time elapses more than 20us.
             // MEMO: 20[us] * (TIMER_RAW_FREQ / 1000000)[count per us]
             // MEMO: then change above using this rule: a/(b/c) = a*1/(b/c) = a*(c/b)
-            if (TIMER_DIFF_RAW(TIMER_RAW, last) > 20/(1000000/TIMER_RAW_FREQ)) {
+            if (time_us_32() - last > 20) {
                 matrix[row] = matrix_prev[row];
             }
 
-            _delay_us(5);
+            busy_wait_us_32(5);
             KEY_PREV_OFF();
             KEY_UNABLE();
 
@@ -123,21 +122,21 @@ uint8_t matrix_scan(void)
 #ifdef HHKB_JP
             // Looks like JP needs faster scan due to its twice larger matrix
             // or it can drop keys in fast key typing
-            _delay_us(30);
+            busy_wait_us_32(30);
 #else
-            _delay_us(75);
+busy_wait_us_32(75);
 #endif
         }
         if (matrix[row] ^ matrix_prev[row]) matrix_last_modified = timer_read32();
     }
     // power off
-    if (KEY_POWER_STATE() &&
-            (USB_DeviceState == DEVICE_STATE_Suspended ||
-             USB_DeviceState == DEVICE_STATE_Unattached ) &&
-            timer_elapsed32(matrix_last_modified) > MATRIX_POWER_SAVE) {
-        KEY_POWER_OFF();
-        suspend_power_down();
-    }
+    // if (KEY_POWER_STATE() &&
+    //         (USB_DeviceState == DEVICE_STATE_Suspended ||
+    //          USB_DeviceState == DEVICE_STATE_Unattached ) &&
+    //         timer_elapsed32(matrix_last_modified) > MATRIX_POWER_SAVE) {
+    //     KEY_POWER_OFF();
+    //     suspend_power_down();
+    // }
     return 1;
 }
 

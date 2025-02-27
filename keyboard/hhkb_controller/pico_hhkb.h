@@ -25,45 +25,46 @@
  * power:   GPIO13(L:off/H:on)
  * row-ext: GPIO14, GPIO15 for HHKB JP(active low)
  */
-static uint8_t row[3] = {2, 3, 6};
-static uint8_t col[3] = {7, 8, 9};
-static uint8_t can = 10;
-static uint8_t key = 11;
-static uint8_t prev = 12;
+static uint8_t row[3] = {6, 7, 8};
+static uint8_t col[3] = {9, 10, 11};
+static uint8_t enable = 12;
+static uint8_t key = 2;
+static uint8_t prev = 3;
 static uint8_t power = 13;
 static uint8_t row_ext[2] = {14, 15};
 
 
-static inline void KEY_ENABLE(void) { gpio_pull_down(10); }
-static inline void KEY_UNABLE(void) { gpio_pull_up(10); }
-static inline bool KEY_STATE(void) { return gpio_get(11); }
-static inline void KEY_PREV_ON(void) { gpio_pull_up(12); }
-static inline void KEY_PREV_OFF(void) { gpio_pull_down(12); }
+
+static inline void KEY_ENABLE(void) { gpio_pull_down(enable); }
+static inline void KEY_UNABLE(void) { gpio_pull_up(enable); }
+static inline bool KEY_STATE(void) { return gpio_get(key); }
+static inline void KEY_PREV_ON(void) { gpio_pull_up(prev); }
+static inline void KEY_PREV_OFF(void) { gpio_pull_down(prev); }
 static inline void KEY_POWER_ON(void) {
-    gpio_set_dir_out_masked(0x17CC);
-    gpio_pull_up(10);        // change pins output
-    gpio_set_dir(13, 1);
-    gpio_pull_up(13);        // MOS FET switch on
+    gpio_set_dir_out_masked(0x1FC8);
+    gpio_pull_up(enable);        // change pins output
+    gpio_set_dir(power, 1);
+    gpio_pull_up(power);        // MOS FET switch on
     /* Without this wait you will miss or get false key events. */
     sleep_ms(5);               // wait for powering up
 }
 static inline void KEY_POWER_OFF(void) {
     /* input with pull-up consumes less than without it when pin is open. */
-    gpio_set_dir_in_masked(0x17CC);
-    gpio_set_mask(0x17CC);          // change pins input with pull-up
-    gpio_set_dir(13, 1);
-    gpio_pull_down(13);   //  MOS FET switch off
+    gpio_set_dir_in_masked(0x1FC8);
+    gpio_set_mask(0x1FC8);          // change pins input with pull-up
+    gpio_set_dir(power, 1);
+    gpio_pull_down(power);   //  MOS FET switch off
 }
-static inline bool KEY_POWER_STATE(void) { return gpio_get(13); }
+static inline bool KEY_POWER_STATE(void) { return gpio_get(power); }
 
 static inline void KEY_INIT(void)
 {
     /* row,col,prev: output */
-    gpio_set_dir_out_masked(0x17CC);
-    gpio_pull_up(10);   // unable
+    gpio_set_dir_out_masked(0x1FC8);
+    gpio_pull_up(enable);   // unable
     /* key: input with pull-up */
-    gpio_set_dir(12, 0);
-    gpio_pull_up(12);
+    gpio_set_dir(prev, 0);
+    gpio_pull_up(prev);
 #ifdef HHKB_JP
     /* row extention for HHKB JP */
     gpio_set_dir_out_masked(0xC000);
@@ -82,12 +83,12 @@ static inline void KEY_INIT(void)
 static inline void KEY_SELECT(uint8_t ROW, uint8_t COL)
 {
     for (uint8_t i = 0; i < 3; i++) {
-        if(((ROW >> i) & 1) == 1) {
+        if((ROW >> i) & 1) {
             gpio_pull_up(row[i]);
         } else {
             gpio_pull_down(row[i]);
         }
-        if(((COL >> i) & 1) == 1) {
+        if((COL >> i) & 1) {
             gpio_pull_up(col[i]);
         } else {
             gpio_pull_down(col[i]);
